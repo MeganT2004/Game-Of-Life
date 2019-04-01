@@ -19,26 +19,14 @@ def print_grid(grid):
                 print('██', end='')
         print()
 
-def Neighbour_Counts(x, y):
+def Neighbour_Counts(cellX, cellY):
     aliveNeighboursCount = 0
-    if grid[x - 1][y -1] == 1:
-        aliveNeighboursCount += 1
-    if grid[x -1][y] == 1:
-        aliveNeighboursCount += 1
-    if y < size - 1 and grid[x -1][y + 1] == 1:
-        aliveNeighboursCount += 1
-
-    if y < size - 1 and grid[x][y + 1] == 1:
-        aliveNeighboursCount += 1
-    if grid [x][y - 1] == 1:
-        aliveNeighboursCount += 1
-
-    if x < size - 1 and grid [x + 1][y] == 1:
-        aliveNeighboursCount += 1
-    if x < size -1 and grid[x + 1][y - 1] == 1:
-        aliveNeighboursCount += 1
-    if x < size - 1 and y < size - 1 and grid[x + 1][y + 1] == 1:
-        aliveNeighboursCount += 1
+    for x in [cellX - 1, cellX, cellX + 1]:
+        for y in [cellY - 1, cellY, cellY + 1]:
+            if x == cellX and y == cellY:
+                pass
+            elif x < size - 1 and y < size - 1 and grid[x][y] == 1:
+                aliveNeighboursCount += 1
     return aliveNeighboursCount
 
 def New_State():
