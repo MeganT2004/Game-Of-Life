@@ -1,7 +1,19 @@
 import random
 from os import system
 import time
-size = 50
+import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-z", "--size", help="choose the size of the grid", type=int, default=10)
+parser.add_argument("-p", "--speed", help="choose the speed of the grid", type=float, default=0.1)
+
+args = parser.parse_args()
+size = (args.size)
+speed = (args.speed)
+
+
+# #size = 50
 # grid = [
 #     [0, 0, 0, 0, 0],
 #     [0, 0, 1, 0, 0],
@@ -59,8 +71,6 @@ def New_State():
                 if cellState == 0:
                     if aliveNeighboursCount == 3:
                         newCellState = 1
-
-                
                 newGrid[x][y] = newCellState
     return newGrid
 
