@@ -2,6 +2,13 @@ import random
 from os import system
 import time
 size = 50
+# grid = [
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 1, 0, 0],
+#     [0, 0, 0, 1, 0],
+#     [0, 1, 1, 1, 0],
+#     [0, 0, 0, 0, 0]
+# ]
 
 grid = []
 for i in range(size):
@@ -23,10 +30,15 @@ def Neighbour_Counts(cellX, cellY):
     aliveNeighboursCount = 0
     for x in [cellX - 1, cellX, cellX + 1]:
         for y in [cellY - 1, cellY, cellY + 1]:
+            #if x >= size:
+            x = x % size
+            #if y >= size:
+            y = y % size
             if x == cellX and y == cellY:
                 pass
-            elif x < size - 1 and y < size - 1 and grid[x][y] == 1:
+            elif grid[x][y] == 1:
                 aliveNeighboursCount += 1
+            
     return aliveNeighboursCount
 
 def New_State():
@@ -36,15 +48,19 @@ def New_State():
                 aliveNeighboursCount = Neighbour_Counts(x, y)
                 cellState = grid[x][y]
                 newCellState = cellState
-                if aliveNeighboursCount < 2:
-                    newCellState = 0
-                if aliveNeighboursCount > 3:
-                    newCellState = 0
-                if aliveNeighboursCount == 3:
-                    newCellState = 1
-                if cellState == 0: 
+                if cellState == 1:
+                    if aliveNeighboursCount < 2:
+                        newCellState = 0
+                    if aliveNeighboursCount > 3:
+                        newCellState = 0                    
                     if aliveNeighboursCount == 2 or aliveNeighboursCount == 3:
                         newCellState = 1
+                        
+                if cellState == 0:
+                    if aliveNeighboursCount == 3:
+                        newCellState = 1
+
+                
                 newGrid[x][y] = newCellState
     return newGrid
 
@@ -52,4 +68,4 @@ while True:
     system('cls')
     print_grid(grid)
     grid = New_State()
-    time.sleep(0.2)
+    time.sleep(0.5)
