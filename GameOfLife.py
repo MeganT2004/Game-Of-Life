@@ -103,8 +103,9 @@ class Game:
         UI = (args.UserInterface)
         if UI == False:
             self.ouputter = CommandLineOutputter()
-        else:
+        elif UI == True:
             self.ouputter = PyGameOutputter()
+        self.generateGrid = random_grid()
 
     def Neighbour_Counts(self, cellX, cellY):
         aliveNeighboursCount = 0
@@ -166,12 +167,7 @@ class Game:
     def restartGame(self):
         restart=input("Do you want to start again? (Y/N) ")
         if restart.upper() == "Y":
-            grid = []
-            for x in range(size):
-                row = []
-                for y in range(size):
-                    row.append(random.randint(0, 1))
-                grid.append(row)
+            self.generateGrid
             self.ouputter.print_grid(self.grid)
             self.run()
         elif restart.upper() == "N":
