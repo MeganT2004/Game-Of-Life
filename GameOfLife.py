@@ -4,15 +4,17 @@ from os import system
 import time
 import sys
 import argparse
+import pygame
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-z", "--size", help="choose the size of the grid", type=int, default=5)
-parser.add_argument("-p", "--speed", help="choose the speed of the grid", type=float, default=0.2)
+parser.add_argument("-z", "--size", help="choose the size of the grid", type=int, default=25)
+parser.add_argument("-p", "--speed", help="choose the speed of the grid", type=float, default=30)
 parser.add_argument("-f", "--file", help="choose your own pre-set file to use", default=os.environ.get('FILE', None))
 parser.add_argument("-b", "--birth", help="define the birth rules (between 1 and 9)", type=int, default=3)
 parser.add_argument("-s", "--survival", help="define the survival rules of the game (between 1 and 9)", type=int, default=2)
 parser.add_argument("-pre", "--presetRules", help="Choose preset survival rules for the game. Use '--rules' to see preset rules.", type=str, default=os.environ.get('PRESETRULES', None))
-parser.add_argument("--rules", help="Displays preset rule types. Type 'True' to see.", type=bool, default=False)
+parser.add_argument("-r", "--rules", help="Displays preset rule types. Type 'True' to see.", type=bool, default=False)
+parser.add_argument("-UI", "--UserInterface", help="Choose whether you wan to use the pyGame UI or the Command Line. (False if command line is wanted)", type=bool, default=True)
 
 args = parser.parse_args()
 size = (args.size)
@@ -21,7 +23,7 @@ preRules = (args.presetRules)
 
 rules = (args.rules)
 if rules == True:
-    print("Rule (Code):\tDescription:\nSeeds (SeedRule.py):\tEvery alive cell dies but 2 neighbours are born.\nLife Without Death (LWD.py):\t3 neighbours are needed to be born, but cells never die.\n")
+    print("\nRule (Code):\t\t\tDescription:\n\nSeeds (SeedRule.py):\t\tEvery alive cell dies but 2 neighbours are born.\nLife Without Death (LWD.py):\t3 neighbours are needed to be born, but cells never die.\nDay and Night (DayAndNight.py):\tVery interesting rules creating strange patterns.\n")
     sys.exit()
 
 def random_grid():
@@ -51,20 +53,58 @@ def read_grid(file_path):
             grid.append(row)
     return grid
 
+class PyGameOutputter:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((400, 400))
+        self.clock = pygame.time.Clock()
+
+    def print_grid(self, grid):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+        cellWidth = 400 / len(grid)
+        cellHeight = 400 / len(grid)
+
+        for rowIndex, row in enumerate(grid):
+            for cellIndex, cell in enumerate(row):
+                rect = pygame.Rect(cellWidth*cellIndex,rowIndex*cellHeight,cellWidth,cellHeight)
+                if cell == 0:
+                    pygame.draw.rect(self.screen, (255,255,255), rect)
+                elif cell == 1:
+                    pygame.draw.rect(self.screen, (0,0,0), rect)
+                elif cell == 2:
+                    pygame.draw.rect(self.screen, (169,169,169), rect)
+                elif cell == 3:
+                    pygame.draw.rect(self.screen, (220,220,220), rect)
+        pygame.display.update()
+        self.clock.tick(speed)
+
 class CommandLineOutputter:
     def print_grid(self, grid):
+        system('cls')
         for row in grid:
             for cell in row:
                 if cell == 0:
                     print('  ', end='')
-                else:
+                elif cell == 1:
                     print('██', end='')
+                elif cell == 2:
+                    print('▒▒', end='')
+                elif cell == 3:
+                    print('░░', end='')
             print()
+        time.sleep(1.0/speed)
 
 class Game:
     def __init__(self, grid):
         self.grid = grid
-        self.ouputter = CommandLineOutputter()
+        UI = (args.UserInterface)
+        if UI == False:
+            self.ouputter = CommandLineOutputter()
+        else:
+            self.ouputter = PyGameOutputter()
 
     def Neighbour_Counts(self, cellX, cellY):
         aliveNeighboursCount = 0
@@ -90,14 +130,24 @@ class Game:
                         pass
                     elif cellState == 1:
                         if aliveNeighboursCount < S:
-                            newCellState = 0 
+                            newCellState = 2 
                         elif aliveNeighboursCount > B:
-                            newCellState = 0        
+                            newCellState = 2        
                         elif aliveNeighboursCount == S or aliveNeighboursCount == B:
                             newCellState = 1
-                    if cellState == 0:
+                    elif cellState == 0:
                         if aliveNeighboursCount == B:
                             newCellState = 1
+                    elif cellState == 2:
+                        if aliveNeighboursCount == B:
+                            newCellState = 1
+                        else:
+                            newCellState = 3
+                    elif cellState == 3:
+                        if aliveNeighboursCount == B:
+                            newCellState = 1
+                        else:
+                            newCellState = 0  
                     newGrid[x][y] = newCellState
         return newGrid
 
@@ -132,16 +182,13 @@ class Game:
     def run(self):
         generation = 0
         while self.isGameOver():
-            system('cls')
             self.ouputter.print_grid(self.grid)
-            print("Generaion: ", generation)
             newGrid = self.New_State()
             if (newGrid == self.grid):
                 print("The population has stagnated. You survived,", generation, "generations.")
                 self.restartGame()
             self.grid = newGrid
             generation = generation + 1
-            time.sleep(speed)
         else:
             print("The population has died off. You survived,", generation, "generations.")
             self.restartGame()
@@ -150,16 +197,13 @@ class Game:
         generation = 0
         module = __import__(preRules.replace(".py", ""))
         while self.isGameOver():
-            system('cls')
             self.ouputter.print_grid(self.grid)
-            print("Generaion: ", generation)
             newGrid = module.Rule(self.Neighbour_Counts, self.grid)
             if (newGrid == self.grid):
                 print("The population has stagnated. You survived,", generation, "generations.")
                 self.restartGame()
             self.grid = newGrid
             generation = generation + 1
-            time.sleep(speed)
         else:
             print("The population has died off. You survived,", generation, "generations.")
             self.restartGame()
